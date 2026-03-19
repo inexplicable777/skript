@@ -588,11 +588,11 @@ else
 fi
 
 
+#####after test delete 
+####after test delete 
 echo "Update list packages..."
 opkg update
-
 checkPackageAndInstall "coreutils-base64" "1"
-
 #проверка и установка пакетов AmneziaWG
 #install_awg_packages
 
@@ -1074,7 +1074,7 @@ do
 		if [ "$is_manual_input_parameters" = "n" ]; then
 			I=0
 			WARP_ENDPOINT_HOSTS="engage.cloudflareclient.com 162.159.192.1 162.159.192.2 162.159.192.4 162.159.195.1 162.159.195.4 188.114.96.1 188.114.96.23 188.114.96.50 188.114.96.81"
-			WARP_ENDPOINT_PORTS="500 1701 2408 3138 4500"
+			WARP_ENDPOINT_PORTS="500"
 			for element in $WARP_ENDPOINT_HOSTS; do
 				EndpointIP="$element"
 				for element2 in $WARP_ENDPOINT_PORTS; do
@@ -1258,7 +1258,7 @@ case $varByPass in
 esac
 
 PACKAGE="podkop"
-REQUIRED_VERSION="v0.7.13-r1"
+REQUIRED_VERSION="v0.7.14-r1"
 
 INSTALLED_VERSION=$(opkg list-installed | grep "^$PACKAGE" | cut -d ' ' -f 3)
 if [ -n "$INSTALLED_VERSION" ] && [ "$INSTALLED_VERSION" != "$REQUIRED_VERSION" ]; then
@@ -1284,9 +1284,9 @@ else
 	if [ "$is_install_podkop" = "y" ] || [ "$is_install_podkop" = "Y" ]; then
 		DOWNLOAD_DIR="/tmp/podkop"
 		mkdir -p "$DOWNLOAD_DIR"
-		podkop_files="podkop-v0.7.13-r1-all.ipk
-			luci-app-podkop-v0.7.13-r1-all.ipk
-			luci-i18n-podkop-ru-0.7.13.ipk"
+		podkop_files="podkop-v0.7.14-r1-all.ipk
+			luci-app-podkop-v0.7.14-r1-all.ipk
+			luci-i18n-podkop-ru-0.7.14.ipk"
 		for file in $podkop_files
 		do
 			echo "Download $file..."
