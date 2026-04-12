@@ -588,11 +588,11 @@ else
 fi
 
 
-#####after test delete 
-####after test delete 
 echo "Update list packages..."
 opkg update
+
 checkPackageAndInstall "coreutils-base64" "1"
+
 #проверка и установка пакетов AmneziaWG
 #install_awg_packages
 
