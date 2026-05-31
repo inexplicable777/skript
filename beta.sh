@@ -406,16 +406,14 @@ checkAndAddDomainPermanentName()
   fi
 }
 
-byPassGeoBlockComssDNS()
+byPassGeoBlockXboxDNS()
 {
 	echo "Configure dhcp..."
 
 	uci set dhcp.cfg01411c.strictorder='1'
 	uci set dhcp.cfg01411c.filter_aaaa='1'
-	uci add_list dhcp.cfg01411c.server='127.0.0.1#5053'
-	uci add_list dhcp.cfg01411c.server='127.0.0.1#5054'
-	uci add_list dhcp.cfg01411c.server='127.0.0.1#5055'
-	uci add_list dhcp.cfg01411c.server='127.0.0.1#5056'
+	uci del dhcp.cfg01411c.server
+	uci add_list dhcp.cfg01411c.server='127.0.0.1#5359'
 	uci add_list dhcp.cfg01411c.server='/*.chatgpt.com/127.0.0.1#5056'
 	uci add_list dhcp.cfg01411c.server='/*.oaistatic.com/127.0.0.1#5056'
 	uci add_list dhcp.cfg01411c.server='/*.oaiusercontent.com/127.0.0.1#5056'
@@ -468,19 +466,19 @@ byPassGeoBlockComssDNS()
 	uci add_list dhcp.cfg01411c.server='/*.brawlstarsgame.com/127.0.0.1#5056'
 	uci commit dhcp
 
-	echo "Add unblock ChatGPT..."
+	#echo "Add unblock ChatGPT..."
 
-	checkAndAddDomainPermanentName "chatgpt.com" "83.220.169.155"
-	checkAndAddDomainPermanentName "openai.com" "83.220.169.155"
-	checkAndAddDomainPermanentName "webrtc.chatgpt.com" "83.220.169.155"
-	checkAndAddDomainPermanentName "ios.chat.openai.com" "83.220.169.155"
-	checkAndAddDomainPermanentName "searchgpt.com" "83.220.169.155"
+	#checkAndAddDomainPermanentName "chatgpt.com" "83.220.169.155"
+	#checkAndAddDomainPermanentName "openai.com" "83.220.169.155"
+	#checkAndAddDomainPermanentName "webrtc.chatgpt.com" "83.220.169.155"
+	#checkAndAddDomainPermanentName "ios.chat.openai.com" "83.220.169.155"
+	#checkAndAddDomainPermanentName "searchgpt.com" "83.220.169.155"
 
 	service dnsmasq restart
 	service odhcpd restart
 }
 
-deleteByPassGeoBlockComssDNS()
+deleteByPassGeoBlockXboxDNS()
 {
 	uci del dhcp.cfg01411c.server
 	uci add_list dhcp.cfg01411c.server='127.0.0.1#5359'
@@ -586,11 +584,6 @@ then
 else
 	is_reconfig_podkop="n"
 fi
-
-echo "Update list packages..."
-opkg update
-
-checkPackageAndInstall "coreutils-base64" "1"
 
 #проверка и установка пакетов AmneziaWG
 #install_awg_packages
@@ -1187,7 +1180,7 @@ case $varByPass in
 	manage_package "youtubeUnblock" "disable" "stop"
 	manage_package "zapret" "disable" "stop"
 	service zapret2 restart
-	deleteByPassGeoBlockComssDNS
+	deleteByPassGeoBlockXboxDNS
 	messageComplete="ByPass block for Method 1: AWG WARP + zapret2 + Opera Proxy...Configured completed..."
 	;;
 2)
@@ -1197,7 +1190,7 @@ case $varByPass in
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "zapret" "disable" "stop"
 	manage_package "zapret2" "disable" "stop"
-	deleteByPassGeoBlockComssDNS
+	deleteByPassGeoBlockXboxDNS
 	messageComplete="ByPass block for Method 2: AWG WARP + Opera Proxy...Configured completed..."
 	;;
 3)
@@ -1207,7 +1200,7 @@ case $varByPass in
 	manage_package "youtubeUnblock" "disable" "stop"
 	manage_package "zapret" "disable" "stop"
 	service zapret2 restart
-	deleteByPassGeoBlockComssDNS
+	deleteByPassGeoBlockXboxDNS
 	messageComplete="ByPass block for Method 3: zapret2 + Opera Proxy...Configured completed..."
 	;;
 4)
@@ -1217,7 +1210,7 @@ case $varByPass in
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "zapret" "disable" "stop"
 	manage_package "zapret2" "disable" "stop"
-	deleteByPassGeoBlockComssDNS
+	deleteByPassGeoBlockXboxDNS
 	messageComplete="ByPass block for Method 4: Only Opera Proxy...Configured completed..."
 	;;
 5)
@@ -1229,8 +1222,8 @@ case $varByPass in
 	manage_package "zapret" "disable" "stop"
 	wget -O "/opt/zapret2/ipset/zapret_hosts_user.txt" "$URL/config_files/zapret-hosts-user-second.txt"
 	service zapret2 restart
-	byPassGeoBlockComssDNS
-	printf "\033[32;1mByPass block for Method 5: zapret2 + ComssDNS for GeoBlock...Configured completed...\033[0m\n"
+	byPassGeoBlockXboxDNS
+	printf "\033[32;1mByPass block for Method 5: zapret2 + XboxDNS for GeoBlock...Configured completed...\033[0m\n"
 	exit 1
 	;;
 6)
@@ -1240,8 +1233,8 @@ case $varByPass in
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "zapret" "disable" "stop"
 	manage_package "zapret2" "disable" "stop"
-	byPassGeoBlockComssDNS
-	messageComplete="ByPass block for Method 6: AWG WARP + ComssDNS for GeoBlock...Configured completed..."
+	byPassGeoBlockXboxDNS
+	messageComplete="ByPass block for Method 6: AWG WARP + XboxDNS for GeoBlock...Configured completed..."
 	;;
 7)
 	nameFileReplacePodkop="podkopNewWARPNoYoutube"
@@ -1250,8 +1243,8 @@ case $varByPass in
 	manage_package "youtubeUnblock" "disable" "stop"
 	manage_package "zapret" "disable" "stop"
 	service zapret2 restart
-	byPassGeoBlockComssDNS
-	messageComplete="ByPass block for Method 7: AWG WARP + zapret2 + ComssDNS for GeoBlock...Configured completed..."
+	byPassGeoBlockXboxDNS
+	messageComplete="ByPass block for Method 7: AWG WARP + zapret2 + XboxDNS for GeoBlock...Configured completed..."
 	;;
 8)
 	printf "\033[32;1mTry custom settings router to bypass the locks... Recomendation buy 'VPS' and up 'vless'\033[0m\n"
@@ -1263,7 +1256,7 @@ case $varByPass in
 esac
 
 PACKAGE="podkop"
-REQUIRED_VERSION="v0.7.14-r1"
+REQUIRED_VERSION="v0.7.18-r1"
 
 INSTALLED_VERSION=$(opkg list-installed | grep "^$PACKAGE" | cut -d ' ' -f 3)
 if [ -n "$INSTALLED_VERSION" ] && [ "$INSTALLED_VERSION" != "$REQUIRED_VERSION" ]; then
@@ -1289,9 +1282,9 @@ else
 	if [ "$is_install_podkop" = "y" ] || [ "$is_install_podkop" = "Y" ]; then
 		DOWNLOAD_DIR="/tmp/podkop"
 		mkdir -p "$DOWNLOAD_DIR"
-		podkop_files="podkop-v0.7.17-r1-all.ipk
-			luci-app-podkop-v0.7.17-r1-all.ipk
-			luci-i18n-podkop-ru-0.7.17.ipk"
+		podkop_files="podkop-v0.7.18-r1-all.ipk
+			luci-app-podkop-v0.7.18-r1-all.ipk
+			luci-i18n-podkop-ru-0.7.18.ipk"
 		for file in $podkop_files
 		do
 			echo "Download $file..."
