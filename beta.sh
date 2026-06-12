@@ -1275,7 +1275,7 @@ case $varByPass in
 esac
 
 PACKAGE="podkop"
-REQUIRED_VERSION="v0.7.18-r1"
+REQUIRED_VERSION="v0.7.19-r1"
 
 INSTALLED_VERSION=$(opkg list-installed | grep "^$PACKAGE" | cut -d ' ' -f 3)
 if [ -n "$INSTALLED_VERSION" ] && [ "$INSTALLED_VERSION" != "$REQUIRED_VERSION" ]; then
@@ -1301,9 +1301,9 @@ else
 	if [ "$is_install_podkop" = "y" ] || [ "$is_install_podkop" = "Y" ]; then
 		DOWNLOAD_DIR="/tmp/podkop"
 		mkdir -p "$DOWNLOAD_DIR"
-		podkop_files="podkop-v0.7.18-r1-all.ipk
-			luci-app-podkop-v0.7.18-r1-all.ipk
-			luci-i18n-podkop-ru-0.7.18.ipk"
+		podkop_files="podkop-v0.7.19-r1-all.ipk
+			luci-app-podkop-v0.7.19-r1-all.ipk
+			luci-i18n-podkop-ru-0.7.19.ipk"
 		for file in $podkop_files
 		do
 			echo "Download $file..."
@@ -1358,3 +1358,4 @@ printf "\033[32;1m$messageComplete\033[0m\n"
 printf "\033[31;1mAfter 10 second AUTOREBOOT ROUTER...\033[0m\n"
 sleep 10
 reboot
+
