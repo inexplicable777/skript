@@ -1,5 +1,24 @@
 #!/bin/sh
 
+# ============================================
+# ДОБАВЛЕНИЕ РЕПОЗИТОРИЯ ROUTERICH
+# ============================================
+
+# Скачиваем публичный ключ
+wget -O /tmp/routerich.pub https://github.com/routerich/packages.routerich/raw/24.10.5/routerich.pub
+
+# Добавляем ключ в доверенные
+opkg-key add /tmp/routerich.pub
+
+# Добавляем репозиторий в систему
+echo "src/gz routerich https://github.com/routerich/packages.routerich/raw/24.10.5/routerich" >> /etc/opkg/customfeeds.conf
+
+# Обновляем списки пакетов
+opkg update
+
+# Удаляем временный файл с ключом
+rm -f /tmp/routerich.pub
+
 install_awg_packages() {
     # Получение pkgarch с наибольшим приоритетом
     PKGARCH=$(opkg print-architecture | awk 'BEGIN {max=0} {if ($3 > max) {max = $3; arch = $2}} END {print arch}')
