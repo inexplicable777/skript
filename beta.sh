@@ -1,23 +1,92 @@
 #!/bin/sh
 
 # ============================================
-# ДОБАВЛЕНИЕ РЕПОЗИТОРИЯ ROUTERICH
+# ДОБАВЛЕНИЕ РЕПОЗИТОРИЯ ROUTERICH (расширенная проверка)
 # ============================================
 
-# Скачиваем публичный ключ
-wget -O /tmp/routerich.pub https://github.com/routerich/packages.routerich/raw/24.10.5/routerich.pub
+REPO_URL="https://github.com/routerich/packages.routerich/raw/24.10.5/routerich"
+REPO_NAME="routerich"
+KEY_URL="https://github.com/routerich/packages.routerich/raw/24.10.5/routerich.pub"
 
-# Добавляем ключ в доверенные
-opkg-key add /tmp/routerich.pub
+# Функция проверки существования репозитория
+is_repo_exists() {
+    local repo_name="$1"
+    
+    # Проверяем в customfeeds.conf
+    if grep -q "src/gz $repo_name" /etc/opkg/customfeeds.conf 2>/dev/null; then
+        return 0
+    fi
+    
+    # Проверяем в distfeeds.conf
+    if grep -q "src/gz $repo_name" /etc/opkg/distfeeds.conf 2>/dev/null; then
+        return 0
+    fi
+    
+    # Проверяем в файлах в /etc/opkg/
+    if grep -rq "src/gz $repo_name" /etc/opkg/*.conf 2>/dev/null; then
+        return 0
+    fi
+    
+    return 1
+}
 
-# Добавляем репозиторий в систему
-echo "src/gz routerich https://github.com/routerich/packages.routerich/raw/24.10.5/routerich" >> /etc/opkg/customfeeds.conf
+# Функция проверки существования ключа
+is_key_exists() {
+    # Проверяем, добавлен ли ключ в opkg
+    if opkg-key list 2>/dev/null | grep -q "routerich"; then
+        return 0
+    fi
+    
+    # Проверяем наличие файла ключа
+    if ls /etc/opkg/keys/*routerich* 2>/dev/null; then
+        return 0
+    fi
+    
+    return 1
+}
 
-# Обновляем списки пакетов
-opkg update
-
-# Удаляем временный файл с ключом
-rm -f /tmp/routerich.pub
+# Основная логика
+if is_repo_exists "$REPO_NAME"; then
+    echo "✓ Репозиторий $REPO_NAME уже добавлен в систему. Пропускаем шаг добавления..."
+else
+    echo "→ Репозиторий $REPO_NAME не найден. Добавляем..."
+    
+    # Добавляем ключ, если его нет
+    if is_key_exists; then
+        echo "✓ Публичный ключ уже добавлен в систему. Пропускаем..."
+    else
+        echo "→ Скачиваем и добавляем публичный ключ..."
+        wget -q -O /tmp/routerich.pub "$KEY_URL"
+        if [ $? -eq 0 ] && [ -s /tmp/routerich.pub ]; then
+            opkg-key add /tmp/routerich.pub
+            if [ $? -eq 0 ]; then
+                echo "✓ Публичный ключ успешно добавлен"
+            else
+                echo "✗ Ошибка добавления ключа"
+                rm -f /tmp/routerich.pub
+                exit 1
+            fi
+            rm -f /tmp/routerich.pub
+        else
+            echo "✗ Ошибка загрузки публичного ключа"
+            exit 1
+        fi
+    fi
+    
+    # Добавляем репозиторий
+    echo "src/gz $REPO_NAME $REPO_URL" >> /etc/opkg/customfeeds.conf
+    echo "✓ Репозиторий $REPO_NAME добавлен"
+    
+    # Обновляем списки пакетов
+    echo "→ Обновление списков пакетов..."
+    opkg update
+    if [ $? -eq 0 ]; then
+        echo "✓ Списки пакетов обновлены"
+    else
+        echo "✗ Ошибка обновления списков пакетов"
+        exit 1
+    fi
+fi
 
 install_awg_packages() {
     # Получение pkgarch с наибольшим приоритетом
