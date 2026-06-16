@@ -673,6 +673,11 @@ else
 	is_reconfig_podkop="n"
 fi
 
+echo "Update list packages..."
+opkg update
+
+checkPackageAndInstall "coreutils-base64" "1"
+
 #проверка и установка пакетов AmneziaWG
 #install_awg_packages
 
@@ -897,6 +902,10 @@ else
 		rm -f "/etc/crontabs/temp"
 	fi
 fi
+
+wget -O "/etc/init.d/opera-proxy" "$URL/config_files/opera-proxy"
+/etc/init.d/opera-proxy restart
+sleep 5
 
 isWorkOperaProxy=0
 printf "\033[32;1mCheck opera proxy...\033[0m\n"
@@ -1427,4 +1436,3 @@ printf "\033[32;1m$messageComplete\033[0m\n"
 printf "\033[31;1mAfter 10 second AUTOREBOOT ROUTER...\033[0m\n"
 sleep 10
 reboot
-
