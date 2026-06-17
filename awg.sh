@@ -4,9 +4,6 @@ install_awg_packages() {
     # Получение pkgarch с наибольшим приоритетом
     PKGARCH=$(opkg print-architecture | awk 'BEGIN {max=0} {if ($3 > max) {max = $3; arch = $2}} END {print arch}')
 
-    TARGET=$(ubus call system board | jsonfilter -e '@.release.target' | cut -d '/' -f 1)
-    SUBTARGET=$(ubus call system board | jsonfilter -e '@.release.target' | cut -d '/' -f 2)
-    VERSION=$(ubus call system board | jsonfilter -e '@.release.version')
     PKGPOSTFIX="_v${VERSION}_${PKGARCH}_${TARGET}_${SUBTARGET}.ipk"
     BASE_URL="https://github.com/Slava-Shchipunov/awg-openwrt/releases/download/"
 
