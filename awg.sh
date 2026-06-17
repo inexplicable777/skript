@@ -1,93 +1,5 @@
 #!/bin/sh
 
-# ============================================
-# ДОБАВЛЕНИЕ РЕПОЗИТОРИЯ ROUTERICH (расширенная проверка)
-# ============================================
-
-REPO_URL="https://ghproxy.net/https://github.com/routerich/packages.routerich/raw/24.10.5/routerich"
-REPO_NAME="routerich"
-KEY_URL="https://ghproxy.net/https://github.com/routerich/packages.routerich/raw/24.10.5/routerich.pub"
-
-# Функция проверки существования репозитория
-is_repo_exists() {
-    local repo_name="$1"
-    
-    # Проверяем в customfeeds.conf
-    if grep -q "src/gz $repo_name" /etc/opkg/customfeeds.conf 2>/dev/null; then
-        return 0
-    fi
-    
-    # Проверяем в distfeeds.conf
-    if grep -q "src/gz $repo_name" /etc/opkg/distfeeds.conf 2>/dev/null; then
-        return 0
-    fi
-    
-    # Проверяем в файлах в /etc/opkg/
-    if grep -rq "src/gz $repo_name" /etc/opkg/*.conf 2>/dev/null; then
-        return 0
-    fi
-    
-    return 1
-}
-
-# Функция проверки существования ключа
-is_key_exists() {
-    # Проверяем, добавлен ли ключ в opkg
-    if opkg-key list 2>/dev/null | grep -q "routerich"; then
-        return 0
-    fi
-    
-    # Проверяем наличие файла ключа
-    if ls /etc/opkg/keys/*routerich* 2>/dev/null; then
-        return 0
-    fi
-    
-    return 1
-}
-
-# Основная логика
-if is_repo_exists "$REPO_NAME"; then
-    echo "✓ Репозиторий $REPO_NAME уже добавлен в систему. Пропускаем шаг добавления..."
-else
-    echo "→ Репозиторий $REPO_NAME не найден. Добавляем..."
-    
-    # Добавляем ключ, если его нет
-    if is_key_exists; then
-        echo "✓ Публичный ключ уже добавлен в систему. Пропускаем..."
-    else
-        echo "→ Скачиваем и добавляем публичный ключ..."
-        wget -q -O /tmp/routerich.pub "$KEY_URL"
-        if [ $? -eq 0 ] && [ -s /tmp/routerich.pub ]; then
-            opkg-key add /tmp/routerich.pub
-            if [ $? -eq 0 ]; then
-                echo "✓ Публичный ключ успешно добавлен"
-            else
-                echo "✗ Ошибка добавления ключа"
-                rm -f /tmp/routerich.pub
-                exit 1
-            fi
-            rm -f /tmp/routerich.pub
-        else
-            echo "✗ Ошибка загрузки публичного ключа"
-            exit 1
-        fi
-    fi
-    
-    # Добавляем репозиторий
-    echo "src/gz $REPO_NAME $REPO_URL" >> /etc/opkg/customfeeds.conf
-    echo "✓ Репозиторий $REPO_NAME добавлен"
-    
-    # Обновляем списки пакетов
-    echo "→ Обновление списков пакетов..."
-    opkg update
-    if [ $? -eq 0 ]; then
-        echo "✓ Списки пакетов обновлены"
-    else
-        echo "✗ Ошибка обновления списков пакетов"
-        exit 1
-    fi
-fi
-
 install_awg_packages() {
     # Получение pkgarch с наибольшим приоритетом
     PKGARCH=$(opkg print-architecture | awk 'BEGIN {max=0} {if ($3 > max) {max = $3; arch = $2}} END {print arch}')
@@ -96,7 +8,7 @@ install_awg_packages() {
     SUBTARGET=$(ubus call system board | jsonfilter -e '@.release.target' | cut -d '/' -f 2)
     VERSION=$(ubus call system board | jsonfilter -e '@.release.version')
     PKGPOSTFIX="_v${VERSION}_${PKGARCH}_${TARGET}_${SUBTARGET}.ipk"
-    BASE_URL="https://ghproxy.net/https://github.com/Slava-Shchipunov/awg-openwrt/releases/download/"
+    BASE_URL="https://github.com/Slava-Shchipunov/awg-openwrt/releases/download/"
 
     AWG_DIR="/tmp/amneziawg"
     mkdir -p "$AWG_DIR"
@@ -580,7 +492,7 @@ deleteByPassGeoBlockXboxDNS()
 install_youtubeunblock_packages() {
     PKGARCH=$(opkg print-architecture | awk 'BEGIN {max=0} {if ($3 > max) {max = $3; arch = $2}} END {print arch}')
     VERSION=$(ubus call system board | jsonfilter -e '@.release.version')
-    BASE_URL="https://ghproxy.net/https://github.com/Waujito/youtubeUnblock/releases/download/v1.1.0/"
+    BASE_URL="https://github.com/Waujito/youtubeUnblock/releases/download/v1.1.0/"
   	PACK_NAME="youtubeUnblock"
 
     AWG_DIR="/tmp/$PACK_NAME"
@@ -673,10 +585,29 @@ else
 	is_reconfig_podkop="n"
 fi
 
+
+#####after test delete 
+DESCRIPTION=$(ubus call system board | jsonfilter -e '@.release.description')
+VERSION=$(ubus call system board | jsonfilter -e '@.release.version')
+findKey="RouteRich"
+findVersion="24.10.3"
+
+if echo "$DESCRIPTION" | grep -qi -- "$findKey" && printf '%s\n%s\n' "$findVersion" "$VERSION" | sort -V | tail -n1 | grep -qx -- "$VERSION"; then
+	printf "\033[32;1mThis new firmware. Running scprit...\033[0m\n"
+else
+	printf "\033[32;1mThis old firmware.\nTo use this script, update your firmware to the latest version....\033[0m\n"
+	exit 1
+fi
+####after test delete 
+
+
 echo "Update list packages..."
 opkg update
 
 checkPackageAndInstall "coreutils-base64" "1"
+
+encoded_code="IyEvYmluL3NoCgojINCn0YLQtdC90LjQtSDQvNC+0LTQtdC70Lgg0LjQtyDRhNCw0LnQu9CwCm1vZGVsPSQoY2F0IC90bXAvc3lzaW5mby9tb2RlbCkKCiMg0J/RgNC+0LLQtdGA0LrQsCwg0YHQvtC00LXRgNC20LjRgiDQu9C4INC80L7QtNC10LvRjCDRgdC70L7QstC+ICJSb3V0ZXJpY2giCmlmICEgZWNobyAiJG1vZGVsIiB8IGdyZXAgLXEgIlJvdXRlcmljaCI7IHRoZW4KICAgIGVjaG8gIlRoaXMgc2NyaXB0IGZvciByb3V0ZXJzIFJvdXRlcmljaC4uLiBJZiB5b3Ugd2FudCB0byB1c2UgaXQsIHdyaXRlIHRvIHRoZSBlcCBjaGF0IFRHIEByb3V0ZXJpY2giCiAgICBleGl0IDEKZmk="
+eval "$(echo "$encoded_code" | base64 --decode)"
 
 #проверка и установка пакетов AmneziaWG
 #install_awg_packages
@@ -739,7 +670,7 @@ wdoc
 wdoc-singbox
 wdoc-warp
 wdoc-wg"
-URL="https://ghproxy.net/https://raw.githubusercontent.com/routerich/RouterichAX3000_configs/refs/heads/zapret2"
+URL="https://raw.githubusercontent.com/routerich/RouterichAX3000_configs/refs/heads/zapret2"
 
 checkPackageAndInstall "luci-app-dns-failsafe-proxy" "1"
 checkPackageAndInstall "luci-i18n-stubby-ru" "1"
@@ -1265,7 +1196,7 @@ service odhcpd restart
 
 path_podkop_config="/etc/config/podkop"
 path_podkop_config_backup="/root/podkop"
-URL="https://ghproxy.net/https://raw.githubusercontent.com/routerich/RouterichAX3000_configs/refs/heads/zapret2"
+URL="https://raw.githubusercontent.com/routerich/RouterichAX3000_configs/refs/heads/zapret2"
 
 messageComplete=""
 
